@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Quản lý Giấc ngủ</title>
+    
+    <!-- Safari/iOS optimizations -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Quản lý Giấc ngủ">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- PWA icons for Safari -->
+    <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' fill='%23667eea' rx='20'/><text x='90' y='115' text-anchor='middle' font-size='80' fill='white'>🌙</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23667eea' rx='4'/><text x='16' y='24' text-anchor='middle' font-size='16' fill='white'>🌙</text></svg>">
+    
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="container">
+                <h1><i class="fas fa-moon"></i> Quản lý Giấc ngủ</h1>
+                <div class="user-info">
+                    <div id="user-profile" class="user-profile" style="display: none;">
+                        <img id="user-avatar" src="" alt="Avatar" class="user-avatar">
+                        <span id="user-name"></span>
+                        <button id="logout-btn" class="logout-btn" title="Đăng xuất">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                    <button id="login-btn" class="login-btn">
+                        <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                    </button>
+                    <span id="current-date"></span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav-tabs">
+            <div class="container">
+                <button class="tab-btn active" data-tab="home">
+                    <i class="fas fa-home"></i> Trang chủ
+                </button>
+                <button class="tab-btn" data-tab="log">
+                    <i class="fas fa-plus-circle"></i> Ghi nhận
+                </button>
+                <button class="tab-btn" data-tab="history">
+                    <i class="fas fa-history"></i> Lịch sử
+                </button>
+                <button class="tab-btn" data-tab="stats">
+                    <i class="fas fa-chart-bar"></i> Thống kê
+                </button>
+                <button class="tab-btn" data-tab="settings">
+                    <i class="fas fa-cog"></i> Cài đặt
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container">
+                
+                <!-- Home Tab -->
+                <div id="home-tab" class="tab-content active">
+                    <div class="dashboard">
+                        <div class="stats-summary">
+                            <div class="stat-card">
+                                <i class="fas fa-bed"></i>
+                                <div class="stat-info">
+                                    <h3>Đêm qua</h3>
+                                    <p id="last-night-sleep">--</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <i class="fas fa-clock"></i>
+                                <div class="stat-info">
+                                    <h3>Trung bình 7 ngày</h3>
+                                    <p id="weekly-average">--</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <i class="fas fa-target"></i>
+                                <div class="stat-info">
+                                    <h3>Mục tiêu</h3>
+                                    <p id="sleep-goal">8h 00m</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="quick-actions">
+                            <h2>Hành động nhanh</h2>
+                            <div class="action-buttons">
+                                <button class="action-btn" onclick="quickSleep()">
+                                    <i class="fas fa-moon"></i>
+                                    Đi ngủ ngay
+                                </button>
+                                <button class="action-btn" onclick="quickWakeup()">
+                                    <i class="fas fa-sun"></i>
+                                    Vừa thức dậy
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Log Sleep Tab -->
+                <div id="log-tab" class="tab-content">
+                    <div class="sleep-log-form">
+                        <h2>Ghi nhận giấc ngủ</h2>
+                        <form id="sleep-form">
+                            <div class="form-group">
+                                <label for="sleep-date">Ngày:</label>
+                                <input type="date" id="sleep-date" required>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="bedtime">Giờ đi ngủ:</label>
+                                    <input type="time" id="bedtime" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="wakeup-time">Giờ thức dậy:</label>
+                                    <input type="time" id="wakeup-time" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="sleep-quality">Chất lượng giấc ngủ:</label>
+                                <div class="quality-rating">
+                                    <button type="button" class="quality-btn" data-rating="1">😴</button>
+                                    <button type="button" class="quality-btn" data-rating="2">😐</button>
+                                    <button type="button" class="quality-btn" data-rating="3">😊</button>
+                                    <button type="button" class="quality-btn" data-rating="4">😍</button>
+                                    <button type="button" class="quality-btn" data-rating="5">🥰</button>
+                                </div>
+                                <input type="hidden" id="sleep-quality" value="3">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="sleep-notes">Ghi chú (tuỳ chọn):</label>
+                                <textarea id="sleep-notes" rows="3" placeholder="Ví dụ: căng thẳng, uống cà phê muộn, tập thể dục..."></textarea>
+                            </div>
+
+                            <button type="submit" class="submit-btn">
+                                <i class="fas fa-save"></i> Lưu bản ghi
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- History Tab -->
+                <div id="history-tab" class="tab-content">
+                    <div class="sleep-history">
+                        <h2>Lịch sử giấc ngủ</h2>
+                        <div class="history-controls">
+                            <select id="history-filter">
+                                <option value="week">7 ngày qua</option>
+                                <option value="month">30 ngày qua</option>
+                                <option value="all">Tất cả</option>
+                            </select>
+                        </div>
+                        <div id="sleep-history-list" class="history-list">
+                            <!-- Danh sách lịch sử sẽ được tạo bởi JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Tab -->
+                <div id="stats-tab" class="tab-content">
+                    <div class="statistics">
+                        <h2>Thống kê giấc ngủ</h2>
+                        <div class="stats-overview">
+                            <div class="stat-item">
+                                <h3>Tổng số đêm đã ghi nhận</h3>
+                                <span id="total-nights">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <h3>Thời gian ngủ trung bình</h3>
+                                <span id="average-sleep">0h 0m</span>
+                            </div>
+                            <div class="stat-item">
+                                <h3>Chất lượng giấc ngủ trung bình</h3>
+                                <span id="average-quality">0</span>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="sleep-chart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div id="settings-tab" class="tab-content">
+                    <div class="settings">
+                        <h2>Cài đặt</h2>
+                        <div class="settings-form">
+                            <div class="form-group">
+                                <label for="sleep-goal-setting">Mục tiêu giấc ngủ (giờ):</label>
+                                <input type="number" id="sleep-goal-setting" min="4" max="12" step="0.5" value="8">
+                            </div>
+                            <div class="form-group">
+                                <label for="bedtime-reminder">Nhắc nhở đi ngủ:</label>
+                                <input type="time" id="bedtime-reminder" value="22:00">
+                            </div>
+                            <div class="form-group">
+                                <label for="enable-notifications">
+                                    <input type="checkbox" id="enable-notifications">
+                                    Bật thông báo
+                                </label>
+                            </div>
+                            <button class="submit-btn" onclick="saveSettings()">
+                                <i class="fas fa-save"></i> Lưu cài đặt
+                            </button>
+                            <button class="danger-btn" onclick="clearAllData()">
+                                <i class="fas fa-trash"></i> Xóa tất cả dữ liệu
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-sign-in-alt"></i> Đăng nhập</h2>
+                <button class="modal-close" id="close-login-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="auth-options">
+                    <button id="google-login" class="auth-btn google-btn">
+                        <i class="fab fa-google"></i>
+                        Đăng nhập với Google
+                    </button>
+                    
+                    <div class="divider">
+                        <span>hoặc</span>
+                    </div>
+                    
+                    <form id="email-auth-form">
+                        <div class="auth-tabs">
+                            <button type="button" id="login-tab" class="auth-tab active">Đăng nhập</button>
+                            <button type="button" id="register-tab" class="auth-tab">Đăng ký</button>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="auth-email">Email:</label>
+                            <input type="email" id="auth-email" required placeholder="Nhập địa chỉ email">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="auth-password">Mật khẩu:</label>
+                            <input type="password" id="auth-password" required placeholder="Nhập mật khẩu">
+                        </div>
+                        
+                        <div id="register-fields" style="display: none;">
+                            <div class="form-group">
+                                <label for="auth-confirm-password">Xác nhận mật khẩu:</label>
+                                <input type="password" id="auth-confirm-password" placeholder="Nhập lại mật khẩu">
+                            </div>
+                            <div class="form-group">
+                                <label for="auth-display-name">Tên hiển thị:</label>
+                                <input type="text" id="auth-display-name" placeholder="Tên của bạn">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" id="email-auth-submit" class="auth-btn email-btn">
+                            <i class="fas fa-envelope"></i>
+                            <span id="auth-submit-text">Đăng nhập</span>
+                        </button>
+                    </form>
+                </div>
+                
+                <div id="auth-loading" class="auth-loading" style="display: none;">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Đang xử lý...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Config -->
+    <script>
+        // Firebase configuration - BẠN CẦN THAY THẾ BẰNG CONFIG THỰC TẾ CỦA BẠN
+        const firebaseConfig = {
+  apiKey: "AIzaSyDXV-oDioINk4bxPXLxJlsRNTMfE1u5tx4",
+  authDomain: "sleep-tracker-app-fed79.firebaseapp.com",
+  projectId: "sleep-tracker-app-fed79",
+  storageBucket: "sleep-tracker-app-fed79.firebasestorage.app",
+  messagingSenderId: "217406254531",
+  appId: "1:217406254531:web:14a3ca2e5fdcc16dfa6176",
+  measurementId: "G-LKT2YXTE9H"
+};
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
+        // Configure Firestore settings
+        db.settings({
+            cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
+        });
+        
+        // Enable offline persistence
+        db.enablePersistence({
+            synchronizeTabs: true
+        }).catch((err) => {
+            if (err.code == 'failed-precondition') {
+                console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+            } else if (err.code == 'unimplemented') {
+                console.warn('The current browser does not support offline persistence');
+            }
+        });
+    </script>
+
+    <script src="script.js"></script>
+</body>
+</html>
