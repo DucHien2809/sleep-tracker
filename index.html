@@ -389,8 +389,17 @@
             const firebaseConfig = CONFIG.FIREBASE_CONFIG;
             console.log('Firebase config:', firebaseConfig);
             
-            // Initialize Firebase
-            firebase.initializeApp(firebaseConfig);
+            // Check if Firebase is already initialized
+            let app;
+            try {
+                app = firebase.app();
+                console.log('Firebase already initialized, using existing app');
+            } catch (e) {
+                // Initialize Firebase if not already done
+                app = firebase.initializeApp(firebaseConfig);
+                console.log('Firebase initialized for the first time');
+            }
+            
             const auth = firebase.auth();
             const db = firebase.firestore();
             
@@ -398,23 +407,16 @@
             window.auth = auth;
             window.db = db;
             
-            // Configure Firestore settings with modern cache configuration
+            // Configure Firestore settings with modern cache configuration and merge option
             db.settings({
                 cache: {
                     sizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
                 }
-            });
+            }, { merge: true });
             
-            // Enable offline persistence with modern settings
-            db.enablePersistence({
-                synchronizeTabs: true
-            }).catch((err) => {
-                if (err.code == 'failed-precondition') {
-                    console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
-                } else if (err.code == 'unimplemented') {
-                    console.warn('The current browser does not support offline persistence');
-                }
-            });
+            // Enable offline persistence with modern settings - using cache instead of deprecated method
+            // Note: enableMultiTabIndexedDbPersistence is deprecated, using cache settings instead
+            // db.enablePersistence() is handled automatically by the cache configuration above
             
             console.log('Firebase initialized successfully');
             

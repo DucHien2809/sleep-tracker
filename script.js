@@ -497,12 +497,13 @@ class SleepTracker {
             provider.addScope('profile');
             provider.addScope('email');
             
-            // Luôn thử popup trước, nếu bị chặn thì tự động chuyển sang redirect
+            // Thử popup trước, nếu bị chặn thì tự động chuyển sang redirect
             try {
                 console.log('Thử đăng nhập bằng popup...');
                 await window.auth.signInWithPopup(provider);
                 this.hideLoginModal();
                 this.showAlert('Đăng nhập thành công!', 'success');
+                return; // Thành công, thoát khỏi function
             } catch (popupError) {
                 console.log('Popup failed, error code:', popupError.code);
                 
@@ -511,13 +512,13 @@ class SleepTracker {
                     popupError.code === 'auth/popup-closed-by-user' ||
                     popupError.code === 'auth/cancelled-popup-request') {
                     
-                    console.log('Chuyển sang chế độ redirect...');
+                    console.log('Popup bị chặn, chuyển sang chế độ redirect...');
                     
                     // Hiển thị thông báo và hướng dẫn
                     this.showPopupBlockedWarning();
                     
                     // Đợi một chút để user đọc thông báo
-                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    await new Promise(resolve => setTimeout(resolve, 3000));
                     
                     // Sử dụng redirect
                     this.showAlert('Đang chuyển hướng để đăng nhập Google...', 'info');

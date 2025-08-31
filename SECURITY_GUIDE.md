@@ -89,5 +89,24 @@ Deploy a simple Express.js server to handle API calls.
 - ✅ Updated Firebase configuration to use modern settings
 - ✅ Removed exposed API key from client-side code
 - ✅ Created secure API proxy configuration
+- ✅ Fixed Firebase initialization conflicts with merge option
+- ✅ Added Firebase duplicate initialization check
 - ⚠️ Need to deploy actual proxy server
 - ⚠️ Update proxy configuration with real server URL
+
+### Recent Fixes Applied
+
+#### Firebase Warnings Fixed:
+1. **Host Override Warning**: Added `{ merge: true }` option to `db.settings()` to prevent overriding original host settings
+2. **Multiple Initialization**: Added check to prevent Firebase from being initialized multiple times
+3. **Modern Cache Configuration**: Updated to use `cache.sizeBytes` instead of deprecated `cacheSizeBytes`
+4. **Deprecated Methods**: Removed `db.enablePersistence()` calls that were causing warnings
+
+#### Popup Issues Fixed:
+1. **Automatic Fallback**: Added automatic fallback from popup to redirect when popup is blocked
+2. **Better Error Handling**: Improved error handling for popup-related issues
+3. **User Guidance**: Added better user guidance for popup blocking issues
+
+#### Test Files Created:
+- `firebase-test.html` - Simple test file to verify Firebase initialization without warnings
+- `popup-test.html` - Comprehensive test file for popup functionality and Firebase

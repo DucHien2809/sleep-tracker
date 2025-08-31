@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Test</title>
+</head>
+<body>
+    <h1>Firebase Test</h1>
+    <div id="status">Testing Firebase...</div>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <script src="config.js"></script>
+    <script>
+        console.log('Starting Firebase test...');
+        
+        if (typeof CONFIG !== 'undefined') {
+            console.log('CONFIG loaded:', CONFIG);
+            
+            const firebaseConfig = CONFIG.FIREBASE_CONFIG;
+            console.log('Firebase config:', firebaseConfig);
+            
+            try {
+                // Check if Firebase is already initialized
+                let app;
+                try {
+                    app = firebase.app();
+                    console.log('Firebase already initialized, using existing app');
+                    document.getElementById('status').innerHTML = '✅ Firebase already initialized';
+                } catch (e) {
+                    // Initialize Firebase if not already done
+                    app = firebase.initializeApp(firebaseConfig);
+                    console.log('Firebase initialized for the first time');
+                    document.getElementById('status').innerHTML = '✅ Firebase initialized successfully';
+                }
+                
+                const auth = firebase.auth();
+                const db = firebase.firestore();
+                
+                // Configure Firestore settings with merge option
+                db.settings({
+                    cache: {
+                        sizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
+                    }
+                }, { merge: true });
+                
+                // Test basic operations
+                console.log('Firebase auth:', auth);
+                console.log('Firebase db:', db);
+                
+                document.getElementById('status').innerHTML += '<br>✅ Firebase components ready';
+                
+            } catch (error) {
+                console.error('Firebase initialization error:', error);
+                document.getElementById('status').innerHTML = '❌ Firebase error: ' + error.message;
+            }
+        } else {
+            console.error('CONFIG not loaded!');
+            document.getElementById('status').innerHTML = '❌ CONFIG not loaded';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Popup & Firebase Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .btn { padding: 10px 20px; margin: 5px; border: none; border-radius: 6px; cursor: pointer; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-warning { background: #f39c12; color: white; }
+        .status { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status.info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Popup & Firebase</h1>
+    
+    <div class="test-section">
+        <h3>1. Test Popup Cơ bản</h3>
+        <button class="btn btn-primary" onclick="testBasicPopup()">Test Popup Đơn giản</button>
+        <button class="btn btn-success" onclick="testPopupWithContent()">Test Popup với Nội dung</button>
+        <div id="popup-status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Test Firebase Initialization</h3>
+        <button class="btn btn-warning" onclick="testFirebase()">Test Firebase</button>
+        <div id="firebase-status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. Test Google Auth Popup</h3>
+        <button class="btn btn-primary" onclick="testGoogleAuth()">Test Google Auth</button>
+        <div id="google-status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>4. Hướng dẫn Khắc phục Popup</h3>
+        <div style="background: #fff3cd; padding: 15px; border-radius: 6px; border-left: 4px solid #ffc107;">
+            <h4>🚫 Popup bị chặn? Hãy thử:</h4>
+            <ul>
+                <li><strong>Chrome/Edge:</strong> Click khóa 🔒 → Site settings → Pop-ups → Allow</li>
+                <li><strong>Firefox:</strong> Click khóa 🔒 → Site Permissions → Pop-ups → Allow</li>
+                <li><strong>Safari:</strong> Preferences → Websites → Pop-up Windows → Allow</li>
+                <li><strong>Ad Blocker:</strong> Tắt tạm thời hoặc thêm vào whitelist</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <script src="config.js"></script>
+    <script>
+        // Test popup cơ bản
+        function testBasicPopup() {
+            const status = document.getElementById('popup-status');
+            try {
+                const popup = window.open('', '_blank', 'width=300,height=200');
+                if (popup) {
+                    popup.document.write('<h3>✅ Popup hoạt động!</h3><p>Đây là popup test.</p>');
+                    popup.close();
+                    status.innerHTML = '<div class="status success">✅ Popup hoạt động bình thường!</div>';
+                } else {
+                    status.innerHTML = '<div class="status error">❌ Popup bị chặn!</div>';
+                }
+            } catch (error) {
+                status.innerHTML = '<div class="status error">❌ Lỗi: ' + error.message + '</div>';
+            }
+        }
+        
+        // Test popup với nội dung
+        function testPopupWithContent() {
+            const status = document.getElementById('popup-status');
+            try {
+                const popup = window.open('https://www.google.com', '_blank', 'width=800,height=600');
+                if (popup) {
+                    status.innerHTML = '<div class="status success">✅ Popup với URL hoạt động!</div>';
+                    // Đóng popup sau 3 giây
+                    setTimeout(() => popup.close(), 3000);
+                } else {
+                    status.innerHTML = '<div class="status error">❌ Popup với URL bị chặn!</div>';
+                }
+            } catch (error) {
+                status.innerHTML = '<div class="status error">❌ Lỗi: ' + error.message + '</div>';
+            }
+        }
+        
+        // Test Firebase
+        function testFirebase() {
+            const status = document.getElementById('firebase-status');
+            
+            if (typeof CONFIG === 'undefined') {
+                status.innerHTML = '<div class="status error">❌ CONFIG không tìm thấy!</div>';
+                return;
+            }
+            
+            try {
+                const firebaseConfig = CONFIG.FIREBASE_CONFIG;
+                
+                // Check if Firebase is already initialized
+                let app;
+                try {
+                    app = firebase.app();
+                    console.log('Firebase already initialized, using existing app');
+                    status.innerHTML = '<div class="status success">✅ Firebase đã được khởi tạo trước đó</div>';
+                } catch (e) {
+                    // Initialize Firebase if not already done
+                    app = firebase.initializeApp(firebaseConfig);
+                    console.log('Firebase initialized for the first time');
+                    status.innerHTML = '<div class="status success">✅ Firebase khởi tạo thành công lần đầu</div>';
+                }
+                
+                const auth = firebase.auth();
+                const db = firebase.firestore();
+                
+                // Configure Firestore settings with merge option
+                db.settings({
+                    cache: {
+                        sizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
+                    }
+                }, { merge: true });
+                
+                status.innerHTML += '<div class="status info">✅ Firebase components sẵn sàng</div>';
+                
+            } catch (error) {
+                console.error('Firebase test error:', error);
+                status.innerHTML = '<div class="status error">❌ Lỗi Firebase: ' + error.message + '</div>';
+            }
+        }
+        
+        // Test Google Auth
+        function testGoogleAuth() {
+            const status = document.getElementById('google-status');
+            
+            if (typeof firebase === 'undefined' || !firebase.auth) {
+                status.innerHTML = '<div class="status error">❌ Firebase Auth chưa sẵn sàng!</div>';
+                return;
+            }
+            
+            try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                provider.addScope('profile');
+                provider.addScope('email');
+                
+                status.innerHTML = '<div class="status info">🔄 Đang thử popup Google Auth...</div>';
+                
+                // Thử popup
+                firebase.auth().signInWithPopup(provider)
+                    .then((result) => {
+                        status.innerHTML = '<div class="status success">✅ Google Auth popup thành công!</div>';
+                        console.log('Google Auth success:', result);
+                    })
+                    .catch((error) => {
+                        if (error.code === 'auth/popup-blocked') {
+                            status.innerHTML = '<div class="status error">❌ Popup bị chặn! Vui lòng cho phép popup.</div>';
+                        } else if (error.code === 'auth/popup-closed-by-user') {
+                            status.innerHTML = '<div class="status warning">⚠️ User đóng popup</div>';
+                        } else {
+                            status.innerHTML = '<div class="status error">❌ Lỗi Google Auth: ' + error.message + '</div>';
+                        }
+                        console.error('Google Auth error:', error);
+                    });
+                    
+            } catch (error) {
+                status.innerHTML = '<div class="status error">❌ Lỗi: ' + error.message + '</div>';
+            }
+        }
+        
+        // Auto-test khi trang load
+        window.addEventListener('load', () => {
+            console.log('Popup test page loaded');
+            // Test Firebase tự động
+            setTimeout(testFirebase, 1000);
+        });
+    </script>
+</body>
+</html>
