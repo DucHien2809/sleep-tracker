@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Firebase Loading</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .debug-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .loading { background: #e2e3e5; color: #383d41; }
+    </style>
+</head>
+<body>
+    <h1>🐛 Debug Firebase Loading</h1>
+    
+    <div class="debug-section">
+        <h2>📋 Loading Status</h2>
+        <div id="loading-status">
+            <div class="status loading">⏳ Đang khởi tạo...</div>
+        </div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>🔧 Test Buttons</h2>
+        <button onclick="testConfig()">Test CONFIG</button>
+        <button onclick="testFirebase()">Test Firebase</button>
+        <button onclick="testAuth()">Test Auth</button>
+        <button onclick="testPopup()">Test Popup</button>
+        <div id="test-results"></div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <script>
+        let loadingStep = 0;
+        const loadingSteps = [
+            '⏳ Đang tải Firebase SDKs...',
+            '⏳ Đang tải config.js...',
+            '⏳ Đang kiểm tra CONFIG...',
+            '⏳ Đang khởi tạo Firebase...',
+            '⏳ Đang tải script.js...',
+            '✅ Hoàn tất!'
+        ];
+        
+        function updateLoadingStatus(step, message = null) {
+            const statusDiv = document.getElementById('loading-status');
+            const stepMessage = message || loadingSteps[step];
+            statusDiv.innerHTML = `<div class="status ${step === 5 ? 'success' : 'loading'}">${stepMessage}</div>`;
+            loadingStep = step;
+        }
+        
+        function showTestResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        // Step 1: Firebase SDKs loaded
+        updateLoadingStatus(0);
+        
+        // Step 2: Load config.js
+        setTimeout(() => {
+            updateLoadingStatus(1);
+            
+            const configScript = document.createElement('script');
+            configScript.src = 'config.js';
+            configScript.onload = function() {
+                console.log('config.js loaded');
+                updateLoadingStatus(2);
+                
+                // Step 3: Check CONFIG
+                setTimeout(() => {
+                    if (typeof CONFIG !== 'undefined') {
+                        console.log('CONFIG available:', CONFIG);
+                        updateLoadingStatus(3);
+                        
+                        // Step 4: Initialize Firebase
+                        try {
+                            const firebaseConfig = CONFIG.FIREBASE_CONFIG;
+                            firebase.initializeApp(firebaseConfig);
+                            
+                            const auth = firebase.auth();
+                            const db = firebase.firestore();
+                            
+                            window.auth = auth;
+                            window.db = db;
+                            
+                            console.log('Firebase initialized');
+                            updateLoadingStatus(4);
+                            
+                            // Step 5: Load script.js
+                            const script = document.createElement('script');
+                            script.src = 'script.js';
+                            script.onload = function() {
+                                console.log('script.js loaded');
+                                updateLoadingStatus(5);
+                            };
+                            script.onerror = function() {
+                                showTestResult('❌ Lỗi tải script.js', 'error');
+                            };
+                            document.head.appendChild(script);
+                            
+                        } catch (error) {
+                            console.error('Firebase init error:', error);
+                            showTestResult(`❌ Lỗi Firebase: ${error.message}`, 'error');
+                        }
+                        
+                    } else {
+                        showTestResult('❌ CONFIG không có sẵn', 'error');
+                    }
+                }, 100);
+                
+            };
+            configScript.onerror = function() {
+                showTestResult('❌ Lỗi tải config.js', 'error');
+            };
+            document.head.appendChild(configScript);
+            
+        }, 500);
+        
+        // Test functions
+        function testConfig() {
+            if (typeof CONFIG !== 'undefined') {
+                showTestResult(`✅ CONFIG loaded!<br>Project ID: ${CONFIG.FIREBASE_CONFIG.projectId}`, 'success');
+            } else {
+                showTestResult('❌ CONFIG not available', 'error');
+            }
+        }
+        
+        function testFirebase() {
+            if (typeof firebase !== 'undefined') {
+                showTestResult('✅ Firebase SDK loaded', 'success');
+            } else {
+                showTestResult('❌ Firebase SDK not loaded', 'error');
+            }
+        }
+        
+        function testAuth() {
+            if (window.auth) {
+                showTestResult('✅ Firebase Auth ready', 'success');
+            } else {
+                showTestResult('❌ Firebase Auth not ready', 'error');
+            }
+        }
+        
+        function testPopup() {
+            try {
+                const testPopup = window.open('', '_blank', 'width=100,height=100');
+                if (testPopup) {
+                    testPopup.close();
+                    showTestResult('✅ Popup works!', 'success');
+                } else {
+                    showTestResult('❌ Popup blocked!', 'error');
+                }
+            } catch (error) {
+                showTestResult(`❌ Popup error: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1292,11 +1292,14 @@ function clearAllData() {
     }
 }
 
-// Initialize app when DOM is loaded
+// Initialize app when Firebase is ready
 let sleepTracker;
 let sleepSmartAdvisor;
 
-document.addEventListener('DOMContentLoaded', () => {
+// Function to initialize the app
+function initializeApp() {
+    console.log('Initializing app...');
+    
     // Khởi tạo Sleep Tracker
     sleepTracker = new SleepTracker();
     sleepTracker.init();
@@ -1350,4 +1353,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }, 60000); // Check every minute
-});
+}
+
+// Wait for Firebase to be ready
+function waitForFirebaseAndInit() {
+    if (window.auth && window.db) {
+        console.log('Firebase ready, initializing app...');
+        initializeApp();
+    } else {
+        console.log('Waiting for Firebase...');
+        setTimeout(waitForFirebaseAndInit, 100);
+    }
+}
+
+// Start waiting for Firebase when script loads
+waitForFirebaseAndInit();

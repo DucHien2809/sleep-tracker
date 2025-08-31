@@ -379,107 +379,105 @@
 
 
     <!-- Load scripts in correct order -->
-    <script src="config.js"></script>
     <script>
-        // Initialize Firebase immediately after config loads
-        if (typeof CONFIG !== 'undefined') {
-            console.log('CONFIG loaded successfully:', CONFIG);
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, starting script loading...');
             
-            const firebaseConfig = CONFIG.FIREBASE_CONFIG;
-            console.log('Firebase config:', firebaseConfig);
-            
-            try {
-                // Initialize Firebase
-                firebase.initializeApp(firebaseConfig);
-                const auth = firebase.auth();
-                const db = firebase.firestore();
+            // Load config.js first
+            const configScript = document.createElement('script');
+            configScript.src = 'config.js';
+            configScript.onload = function() {
+                console.log('config.js loaded, checking CONFIG...');
                 
-                // Make auth and db globally available
-                window.auth = auth;
-                window.db = db;
-                
-                // Configure Firestore settings
-                db.settings({
-                    cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
-                });
-                
-                // Enable offline persistence
-                db.enablePersistence({
-                    synchronizeTabs: true
-                }).catch((err) => {
-                    if (err.code == 'failed-precondition') {
-                        console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
-                    } else if (err.code == 'unimplemented') {
-                        console.warn('The current browser does not support offline persistence');
+                // Wait a bit for CONFIG to be available
+                setTimeout(function() {
+                    if (typeof CONFIG !== 'undefined') {
+                        console.log('CONFIG loaded successfully:', CONFIG);
+                        
+                        const firebaseConfig = CONFIG.FIREBASE_CONFIG;
+                        console.log('Firebase config:', firebaseConfig);
+                        
+                        try {
+                            // Initialize Firebase
+                            firebase.initializeApp(firebaseConfig);
+                            const auth = firebase.auth();
+                            const db = firebase.firestore();
+                            
+                            // Make auth and db globally available
+                            window.auth = auth;
+                            window.db = db;
+                            
+                            // Configure Firestore settings
+                            db.settings({
+                                cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
+                            });
+                            
+                            // Enable offline persistence
+                            db.enablePersistence({
+                                synchronizeTabs: true
+                            }).catch((err) => {
+                                if (err.code == 'failed-precondition') {
+                                    console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+                                } else if (err.code == 'unimplemented') {
+                                    console.warn('The current browser does not support offline persistence');
+                                }
+                            });
+                            
+                            console.log('Firebase initialized successfully');
+                            
+                            // Now load the main script
+                            const script = document.createElement('script');
+                            script.src = 'script.js';
+                            script.onload = function() {
+                                console.log('script.js loaded successfully');
+                                
+                                // Load AI advice after main script
+                                const aiScript = document.createElement('script');
+                                aiScript.src = 'ai-advice.js';
+                                aiScript.onload = function() {
+                                    console.log('ai-advice.js loaded successfully');
+                                };
+                                document.head.appendChild(aiScript);
+                            };
+                            document.head.appendChild(script);
+                            
+                        } catch (error) {
+                            console.error('Firebase initialization failed:', error);
+                            showError('❌ Lỗi khởi tạo Firebase!<br>Vui lòng tải lại trang hoặc kiểm tra kết nối mạng.');
+                        }
+                        
+                    } else {
+                        console.error('CONFIG not loaded! Check if config.js exists and is accessible.');
+                        showError('❌ Lỗi cấu hình!<br>File config.js không thể tải được. Vui lòng kiểm tra lại.');
                     }
-                });
+                }, 100);
                 
-                console.log('Firebase initialized successfully');
-                
-                // Now load the main script
-                const script = document.createElement('script');
-                script.src = 'script.js';
-                script.onload = function() {
-                    console.log('script.js loaded successfully');
-                    
-                    // Load AI advice after main script
-                    const aiScript = document.createElement('script');
-                    aiScript.src = 'ai-advice.js';
-                    aiScript.onload = function() {
-                        console.log('ai-advice.js loaded successfully');
-                    };
-                    document.head.appendChild(aiScript);
-                };
-                document.head.appendChild(script);
-                
-            } catch (error) {
-                console.error('Firebase initialization failed:', error);
-                // Show error to user
-                document.addEventListener('DOMContentLoaded', function() {
-                    const errorDiv = document.createElement('div');
-                    errorDiv.style.cssText = `
-                        position: fixed;
-                        top: 20px;
-                        left: 50%;
-                        transform: translateX(-50%);
-                        background: #ff6b6b;
-                        color: white;
-                        padding: 1rem;
-                        border-radius: 8px;
-                        z-index: 10000;
-                        text-align: center;
-                    `;
-                    errorDiv.innerHTML = `
-                        <strong>❌ Lỗi khởi tạo Firebase!</strong><br>
-                        Vui lòng tải lại trang hoặc kiểm tra kết nối mạng.
-                    `;
-                    document.body.appendChild(errorDiv);
-                });
-            }
-            
-        } else {
-            console.error('CONFIG not loaded! Check if config.js exists and is accessible.');
-            // Show error to user
-            document.addEventListener('DOMContentLoaded', function() {
-                const errorDiv = document.createElement('div');
-                errorDiv.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    background: #ff6b6b;
-                    color: white;
-                    padding: 1rem;
-                    border-radius: 8px;
-                    z-index: 10000;
-                    text-align: center;
-                `;
-                errorDiv.innerHTML = `
-                    <strong>❌ Lỗi cấu hình!</strong><br>
-                    File config.js không thể tải được. Vui lòng kiểm tra lại.
-                `;
-                document.body.appendChild(errorDiv);
-            });
+            };
+            configScript.onerror = function() {
+                console.error('Failed to load config.js');
+                showError('❌ Không thể tải config.js!<br>Vui lòng kiểm tra file và thử lại.');
+            };
+            document.head.appendChild(configScript);
+        });
+        
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #ff6b6b;
+                color: white;
+                padding: 1rem;
+                border-radius: 8px;
+                z-index: 10000;
+                text-align: center;
+                max-width: 400px;
+            `;
+            errorDiv.innerHTML = message;
+            document.body.appendChild(errorDiv);
         }
     </script>
 
