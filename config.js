@@ -1,7 +1,8 @@
 // Configuration file for API keys and sensitive data
 var CONFIG = {
     // Google Gemini API Configuration
-    GEMINI_API_KEY: 'AIzaSyAAp7dDiPtUsiycdVp4DDblyAIuu1KlrQM',
+    // Note: For production, use server-side proxy to keep API keys secure
+    // GEMINI_API_KEY: 'YOUR_API_KEY_HERE', // Remove this from client-side code
     
     // Firebase Configuration
     FIREBASE_CONFIG: {
