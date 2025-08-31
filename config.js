@@ -1,6 +1,4 @@
 // Configuration file for API keys and sensitive data
-// ⚠️ KHÔNG ĐƯỢC PUSH LÊN GITHUB!
-
 var CONFIG = {
     // Google Gemini API Configuration
     GEMINI_API_KEY: 'AIzaSyAAp7dDiPtUsiycdVp4DDblyAIuu1KlrQM',
