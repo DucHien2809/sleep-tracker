@@ -997,8 +997,33 @@ function clearAllData() {
 
 // Initialize app when DOM is loaded
 let sleepTracker;
+let sleepSmartAdvisor;
+
 document.addEventListener('DOMContentLoaded', () => {
+    // Khởi tạo Sleep Tracker
     sleepTracker = new SleepTracker();
+    sleepTracker.init();
+    
+    // Khởi tạo Smart Sleep Advisor sau khi Sleep Tracker sẵn sàng
+    setTimeout(() => {
+        if (window.sleepSmartAdvisor) {
+            sleepSmartAdvisor = window.sleepSmartAdvisor;
+            // Đồng bộ dữ liệu với Sleep Tracker
+            sleepSmartAdvisor.sleepData = sleepTracker.sleepData;
+            sleepSmartAdvisor.settings = sleepTracker.settings;
+        }
+    }, 100);
+    
+    // Override saveData để cập nhật Smart Advisor
+    const originalSaveData = sleepTracker.saveData;
+    sleepTracker.saveData = function() {
+        originalSaveData.call(this);
+        // Cập nhật dữ liệu cho Smart Advisor
+        if (sleepSmartAdvisor) {
+            sleepSmartAdvisor.sleepData = this.sleepData;
+            sleepSmartAdvisor.settings = this.settings;
+        }
+    };
     
     // Set up bedtime reminders
     setInterval(() => {

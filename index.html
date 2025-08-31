@@ -64,6 +64,9 @@
                 <button class="tab-btn" data-tab="settings">
                     <i class="fas fa-cog"></i> Cài đặt
                 </button>
+                <button class="tab-btn" data-tab="ai-advice">
+                    <i class="fas fa-robot"></i> Tư vấn AI
+                </button>
             </div>
         </nav>
 
@@ -229,6 +232,69 @@
                     </div>
                 </div>
 
+                <!-- AI Advice Tab -->
+                <div id="ai-advice-tab" class="tab-content">
+                    <div class="ai-advice">
+                        <div class="ai-analysis-section">
+                            <h2>Phân tích Giấc ngủ Thông minh</h2>
+                            <p>Hệ thống sẽ phân tích dữ liệu ngủ của bạn và đưa ra lời khuyên cá nhân hóa</p>
+                            
+                            <div class="analysis-summary">
+                                <div class="summary-card">
+                                    <h3>Tóm tắt tuần qua</h3>
+                                    <div id="weekly-sleep-summary">Chưa có dữ liệu</div>
+                                </div>
+                                <div class="summary-card">
+                                    <h3>Vấn đề chính</h3>
+                                    <div id="main-issues">Chưa phân tích</div>
+                                </div>
+                            </div>
+                            
+                            <div class="ai-recommendations">
+                                <div class="recommendation-cards">
+                                    <div class="card-header">
+                                        <h3>Kế hoạch ngủ hôm nay</h3>
+                                    </div>
+                                    <div class="card-content">
+                                        <div id="today-sleep-plan">Chưa có kế hoạch</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="recommendation-cards">
+                                    <div class="card-header">
+                                        <h3>Thời gian ngủ tối ưu</h3>
+                                    </div>
+                                    <div class="card-content">
+                                        <div id="suggested-bedtime">Chưa có gợi ý</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="recommendation-cards">
+                                    <div class="card-header">
+                                        <h3>Lời khuyên sức khỏe</h3>
+                                    </div>
+                                    <div class="card-content">
+                                        <div id="health-advice">Chưa có lời khuyên</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="ai-actions">
+                                <button id="analyze-sleep-btn" class="btn btn-primary">
+                                    <i class="fas fa-magic"></i> Phân tích giấc ngủ
+                                </button>
+                            </div>
+                            
+                            <div class="ai-status">
+                                <div id="ai-loading" class="loading-indicator" style="display: none;">
+                                    <i class="fas fa-spinner fa-spin"></i> Đang phân tích...
+                                </div>
+                                <div id="ai-error" class="error-message" style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </main>
     </div>
@@ -330,6 +396,9 @@
         });
     </script>
 
+    <script src="config.js"></script>
     <script src="script.js"></script>
+    <script src="ai-advice.js"></script>
+
 </body>
 </html>

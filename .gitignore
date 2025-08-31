@@ -33,6 +33,12 @@ Thumbs.db
 firebase-debug.log
 firestore-debug.log
 
+# Configuration files with sensitive data
+config.js
+config.local.js
+secrets.js
+*.key
+
 # Logs
 logs
 *.log

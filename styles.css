@@ -912,3 +912,511 @@ input[type="checkbox"] {
         font-size: 0.8rem;
     }
 }
+
+/* AI Advice Tab Styles */
+.ai-advice {
+    padding: 2rem 0;
+}
+
+.ai-advice h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #333;
+    font-size: 2rem;
+}
+
+.ai-advice h2 i {
+    color: #667eea;
+    margin-right: 0.5rem;
+}
+
+.ai-analysis-section {
+    margin-bottom: 3rem;
+}
+
+.ai-analysis-section h3 {
+    color: #333;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    text-align: center;
+}
+
+.analysis-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.summary-card {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.summary-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.summary-card i {
+    font-size: 2.5rem;
+    color: #667eea;
+    flex-shrink: 0;
+}
+
+.summary-info h4 {
+    color: #333;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.summary-info p {
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.ai-recommendations h3 {
+    color: #333;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    text-align: center;
+}
+
+.recommendation-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.recommendation-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.recommendation-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.card-header i {
+    font-size: 1.5rem;
+    color: #ffd700;
+}
+
+.card-header h4 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.card-content {
+    padding: 1.5rem;
+}
+
+.card-content p {
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+.sleep-timing, .schedule-tips, .health-tips {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.timing-item, .tip-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border-left: 4px solid #667eea;
+}
+
+.timing-item .label {
+    font-weight: 500;
+    color: #333;
+    min-width: 140px;
+}
+
+.timing-item .value {
+    font-weight: 600;
+    color: #667eea;
+    font-size: 1.1rem;
+}
+
+.tip-item i {
+    color: #28a745;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.tip-item span {
+    color: #555;
+    line-height: 1.4;
+}
+
+.ai-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.ai-actions .action-btn {
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 200px;
+    justify-content: center;
+}
+
+.ai-actions .action-btn.primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.ai-actions .action-btn.primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.ai-actions .action-btn.secondary {
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+}
+
+.ai-actions .action-btn.secondary:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.ai-status {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.loading-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    color: #667eea;
+    font-size: 1.1rem;
+    padding: 1.5rem;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 15px;
+    border: 2px solid rgba(102, 126, 234, 0.2);
+}
+
+.loading-indicator i {
+    font-size: 1.5rem;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.error-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    color: #dc3545;
+    font-size: 1.1rem;
+    padding: 1.5rem;
+    background: rgba(220, 53, 69, 0.1);
+    border-radius: 15px;
+    border: 2px solid rgba(220, 53, 69, 0.2);
+}
+
+.error-message i {
+    font-size: 1.5rem;
+}
+
+/* Responsive AI Advice */
+@media (max-width: 768px) {
+    .ai-advice {
+        padding: 1rem 0;
+    }
+    
+    .ai-advice h2 {
+        font-size: 1.5rem;
+    }
+    
+    .analysis-summary {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .recommendation-cards {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .ai-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .ai-actions .action-btn {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .summary-card, .recommendation-card {
+        padding: 1rem;
+    }
+    
+    .card-header {
+        padding: 1rem;
+    }
+    
+    .card-content {
+        padding: 1rem;
+    }
+    
+    .timing-item .label {
+        min-width: 120px;
+        font-size: 0.9rem;
+    }
+}
+
+/* AI Config Button */
+.ai-config-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.5rem;
+}
+
+.ai-config-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.ai-config-btn i {
+    font-size: 1rem;
+}
+
+/* AI Config Modal */
+.ai-config-form {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.ai-config-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.ai-config-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.ai-config-form input[type="checkbox"] {
+    margin-right: 0.5rem;
+}
+
+.ai-config-form input[type="password"],
+.ai-config-form input[type="number"],
+.ai-config-form select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.ai-config-form input:focus,
+.ai-config-form select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.help-text {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.help-text a {
+    color: #667eea;
+    text-decoration: none;
+}
+
+.help-text a:hover {
+    text-decoration: underline;
+}
+
+/* Temperature Slider */
+.ai-config-form input[type="range"] {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: #ddd;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.ai-config-form input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #667eea;
+    cursor: pointer;
+}
+
+.ai-config-form input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #667eea;
+    cursor: pointer;
+    border: none;
+}
+
+#temperature-value {
+    display: inline-block;
+    margin-left: 1rem;
+    font-weight: 600;
+    color: #667eea;
+    min-width: 30px;
+}
+
+/* AI Config Actions */
+.ai-config-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    justify-content: center;
+}
+
+.ai-config-actions .action-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 20px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 150px;
+    justify-content: center;
+}
+
+.ai-config-actions .action-btn.primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.ai-config-actions .action-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.ai-config-actions .action-btn.secondary {
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+}
+
+.ai-config-actions .action-btn.secondary:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* AI Status Messages */
+.ai-status {
+    margin-top: 1.5rem;
+}
+
+.success-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    color: #28a745;
+    font-size: 1.1rem;
+    padding: 1.5rem;
+    background: rgba(40, 167, 69, 0.1);
+    border-radius: 15px;
+    border: 2px solid rgba(40, 167, 69, 0.2);
+}
+
+.success-message i {
+    font-size: 1.5rem;
+}
+
+/* Responsive AI Config */
+@media (max-width: 768px) {
+    .ai-config-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .ai-config-actions .action-btn {
+        width: 100%;
+        max-width: 250px;
+    }
+    
+    .ai-config-form {
+        padding: 0 1rem;
+    }
+}
