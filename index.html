@@ -363,16 +363,8 @@
 
     <!-- Firebase Config -->
     <script>
-        // Firebase configuration - BẠN CẦN THAY THẾ BẰNG CONFIG THỰC TẾ CỦA BẠN
-        const firebaseConfig = {
-  apiKey: "AIzaSyDXV-oDioINk4bxPXLxJlsRNTMfE1u5tx4",
-  authDomain: "sleep-tracker-app-fed79.firebaseapp.com",
-  projectId: "sleep-tracker-app-fed79",
-  storageBucket: "sleep-tracker-app-fed79.firebasestorage.app",
-  messagingSenderId: "217406254531",
-  appId: "1:217406254531:web:14a3ca2e5fdcc16dfa6176",
-  measurementId: "G-LKT2YXTE9H"
-};
+        // Firebase configuration từ config.js
+        const firebaseConfig = CONFIG.FIREBASE_CONFIG;
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);

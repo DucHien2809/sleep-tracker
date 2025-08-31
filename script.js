@@ -126,12 +126,27 @@ class SleepTracker {
         // Create a custom alert notification
         const alertDiv = document.createElement('div');
         alertDiv.className = `alert alert-${type}`;
-        alertDiv.innerHTML = `
-            <div class="alert-content">
-                <i class="fas fa-${this.getAlertIcon(type)}"></i>
-                <span>${message}</span>
-            </div>
-        `;
+        
+        // Kiểm tra xem message có chứa HTML không
+        const hasHTML = /<[^>]*>/.test(message);
+        
+        if (hasHTML) {
+            // Nếu có HTML, hiển thị trực tiếp
+            alertDiv.innerHTML = `
+                <div class="alert-content">
+                    <i class="fas fa-${this.getAlertIcon(type)}"></i>
+                    <div>${message}</div>
+                </div>
+            `;
+        } else {
+            // Nếu không có HTML, hiển thị như text thường
+            alertDiv.innerHTML = `
+                <div class="alert-content">
+                    <i class="fas fa-${this.getAlertIcon(type)}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+        }
 
         // Style the alert
         alertDiv.style.cssText = `
@@ -227,6 +242,9 @@ class SleepTracker {
             }
         });
 
+        // Xử lý redirect result từ Google đăng nhập
+        this.handleRedirectResult();
+
         // Login modal controls
         this.loginBtn.addEventListener('click', () => {
             this.showLoginModal();
@@ -270,6 +288,54 @@ class SleepTracker {
     }
 
     // Authentication Methods
+    async handleRedirectResult() {
+        try {
+            const result = await auth.getRedirectResult();
+            if (result.user) {
+                // User đã đăng nhập thành công qua redirect
+                this.showAlert('Đăng nhập Google thành công!', 'success');
+                this.hideLoginModal();
+            }
+        } catch (error) {
+            console.error('Redirect result error:', error);
+            if (error.code !== 'auth/no-auth-event') {
+                this.showAlert('Lỗi xử lý đăng nhập: ' + error.message, 'error');
+            }
+        }
+    }
+
+    // Kiểm tra xem popup có bị chặn không
+    isPopupBlocked() {
+        try {
+            // Thử mở một popup nhỏ để kiểm tra
+            const testPopup = window.open('', '_blank', 'width=1,height=1');
+            if (testPopup) {
+                testPopup.close();
+                return false; // Popup không bị chặn
+            } else {
+                return true; // Popup bị chặn
+            }
+        } catch (e) {
+            return true; // Có lỗi, giả sử popup bị chặn
+        }
+    }
+
+    // Hiển thị cảnh báo về popup bị chặn
+    showPopupBlockedWarning() {
+        const warningMessage = `
+            <div style="text-align: left; line-height: 1.5;">
+                <strong>Popup bị chặn!</strong><br><br>
+                Để đăng nhập Google dễ dàng hơn, bạn có thể:<br>
+                1. Cho phép popup cho trang web này<br>
+                2. Tắt ad blocker tạm thời<br>
+                3. Sử dụng chế độ redirect (sẽ chuyển hướng)<br><br>
+                <em>App sẽ tự động sử dụng chế độ redirect...</em>
+            </div>
+        `;
+        
+        this.showAlert(warningMessage, 'warning');
+    }
+
     showLoginModal() {
         this.loginModal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
@@ -307,12 +373,61 @@ class SleepTracker {
             provider.addScope('profile');
             provider.addScope('email');
             
-            await auth.signInWithPopup(provider);
-            this.hideLoginModal();
-            this.showAlert('Đăng nhập thành công!', 'success');
+            // Kiểm tra xem popup có bị chặn không
+            if (this.isPopupBlocked()) {
+                this.showPopupBlockedWarning();
+                // Sử dụng redirect ngay lập tức
+                this.showAlert('Đang chuyển hướng để đăng nhập Google...', 'info');
+                await auth.signInWithRedirect(provider);
+                return;
+            }
+            
+            // Thử popup trước, nếu bị chặn thì dùng redirect
+            try {
+                await auth.signInWithPopup(provider);
+                this.hideLoginModal();
+                this.showAlert('Đăng nhập thành công!', 'success');
+            } catch (popupError) {
+                console.log('Popup failed, trying redirect:', popupError.code);
+                
+                if (popupError.code === 'auth/popup-blocked' || 
+                    popupError.code === 'auth/popup-closed-by-user') {
+                    
+                    // Thông báo cho user biết sẽ chuyển hướng
+                    this.showAlert('Đang chuyển hướng để đăng nhập Google...', 'info');
+                    
+                    // Sử dụng redirect thay vì popup
+                    await auth.signInWithRedirect(provider);
+                    // Không cần hide modal vì sẽ redirect
+                } else {
+                    // Các lỗi khác
+                    throw popupError;
+                }
+            }
         } catch (error) {
             console.error('Google login error:', error);
-            this.showAlert('Lỗi đăng nhập: ' + error.message, 'error');
+            
+            // Xử lý các loại lỗi cụ thể
+            let errorMessage = 'Lỗi đăng nhập Google';
+            
+            switch (error.code) {
+                case 'auth/popup-blocked':
+                    errorMessage = 'Trình duyệt đã chặn popup. Vui lòng cho phép popup cho trang web này và thử lại.';
+                    break;
+                case 'auth/popup-closed-by-user':
+                    errorMessage = 'Cửa sổ đăng nhập đã bị đóng. Vui lòng thử lại.';
+                    break;
+                case 'auth/cancelled-popup-request':
+                    errorMessage = 'Yêu cầu đăng nhập đã bị hủy. Vui lòng thử lại.';
+                    break;
+                case 'auth/network-request-failed':
+                    errorMessage = 'Lỗi kết nối mạng. Vui lòng kiểm tra kết nối và thử lại.';
+                    break;
+                default:
+                    errorMessage = 'Lỗi đăng nhập: ' + error.message;
+            }
+            
+            this.showAlert(errorMessage, 'error');
         } finally {
             this.showAuthLoading(false);
         }
