@@ -1,11 +1,11 @@
 // Configuration file for API keys and sensitive data
 // ⚠️ KHÔNG ĐƯỢC PUSH LÊN GITHUB!
 
-const CONFIG = {
+var CONFIG = {
     // Google Gemini API Configuration
-    GEMINI_API_KEY: 'AIzaSyAAp7dDiPtUsiycdVp4DDblyAIuu1KlrQM', // API key thật của bạn
+    GEMINI_API_KEY: 'AIzaSyAAp7dDiPtUsiycdVp4DDblyAIuu1KlrQM',
     
-    // Firebase Configuration - ĐÃ CẬP NHẬT VỚI THÔNG TIN THỰC TẾ
+    // Firebase Configuration
     FIREBASE_CONFIG: {
         apiKey: "AIzaSyDXV-oDioINk4bxPXLxJlsRNTMfE1u5tx4",
         authDomain: "sleep-tracker-app-fed79.firebaseapp.com",
@@ -17,15 +17,5 @@ const CONFIG = {
     }
 };
 
-// HƯỚNG DẪN KHẮC PHỤC LỖI POPUP-BLOCKED:
-// 1. Cho phép popup cho trang web này trong trình duyệt
-// 2. Tắt ad blocker nếu có
-// 3. Kiểm tra cài đặt bảo mật trình duyệt
-// 4. Nếu vẫn lỗi, app sẽ tự động chuyển sang redirect mode
-
-// Export để sử dụng trong các file khác
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = CONFIG;
-} else {
-    window.CONFIG = CONFIG;
-}
+// Make CONFIG globally available
+window.CONFIG = CONFIG;

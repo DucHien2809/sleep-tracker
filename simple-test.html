@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Config Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Load Config.js</h1>
+    
+    <div class="test-section">
+        <h2>📋 Test Results</h2>
+        <div id="results">
+            <div class="status info">⏳ Đang test...</div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔧 Manual Test</h2>
+        <button onclick="testConfig()">Test CONFIG</button>
+        <button onclick="testFirebase()">Test Firebase</button>
+        <button onclick="reloadPage()">Reload Page</button>
+    </div>
+
+    <script>
+        function showResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        function testConfig() {
+            if (typeof CONFIG !== 'undefined') {
+                showResult(`✅ CONFIG loaded!<br>Project ID: ${CONFIG.FIREBASE_CONFIG.projectId}`, 'success');
+            } else {
+                showResult('❌ CONFIG not available', 'error');
+            }
+        }
+        
+        function testFirebase() {
+            if (typeof firebase !== 'undefined') {
+                showResult('✅ Firebase SDK loaded', 'success');
+            } else {
+                showResult('❌ Firebase SDK not loaded', 'error');
+            }
+        }
+        
+        function reloadPage() {
+            location.reload();
+        }
+        
+        // Auto test when page loads
+        window.addEventListener('load', function() {
+            console.log('Page loaded, starting tests...');
+            
+            // Test 1: Check if config.js can be loaded
+            const configScript = document.createElement('script');
+            configScript.src = 'config.js';
+            configScript.onload = function() {
+                console.log('config.js loaded successfully');
+                showResult('✅ config.js loaded successfully', 'success');
+                
+                // Test 2: Check if CONFIG is available
+                setTimeout(() => {
+                    if (typeof CONFIG !== 'undefined') {
+                        console.log('CONFIG available:', CONFIG);
+                        showResult(`✅ CONFIG loaded!<br>Project ID: ${CONFIG.FIREBASE_CONFIG.projectId}`, 'success');
+                    } else {
+                        console.error('CONFIG not available after loading config.js');
+                        showResult('❌ CONFIG not available after loading config.js', 'error');
+                    }
+                }, 100);
+            };
+            
+            configScript.onerror = function() {
+                console.error('Failed to load config.js');
+                showResult('❌ Failed to load config.js - Check file path and permissions', 'error');
+            };
+            
+            document.head.appendChild(configScript);
+        });
+    </script>
+</body>
+</html>
