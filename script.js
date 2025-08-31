@@ -275,6 +275,16 @@ class SleepTracker {
             this.signInWithGoogle();
         });
 
+        // Google login redirect (fallback)
+        document.getElementById('google-login-redirect').addEventListener('click', () => {
+            this.signInWithGoogleRedirect();
+        });
+
+        // Check popup status
+        document.getElementById('check-popup-status').addEventListener('click', () => {
+            this.checkPopupStatus();
+        });
+
         // Email auth form
         document.getElementById('email-auth-form').addEventListener('submit', (e) => {
             e.preventDefault();
@@ -320,16 +330,61 @@ class SleepTracker {
         }
     }
 
+    // Kiểm tra và hiển thị trạng thái popup
+    checkPopupStatus() {
+        const isBlocked = this.isPopupBlocked();
+        if (isBlocked) {
+            this.showAlert(`
+                <div style="text-align: left; line-height: 1.5;">
+                    <strong>⚠️ Popup bị chặn!</strong><br><br>
+                    <strong>Hướng dẫn khắc phục:</strong><br>
+                    1️⃣ <strong>Chrome/Edge:</strong> Click khóa bên URL → Site settings → Pop-ups → Allow<br>
+                    2️⃣ <strong>Firefox:</strong> Click khóa → Site Permissions → Pop-ups → Allow<br>
+                    3️⃣ <strong>Safari:</strong> Preferences → Websites → Pop-up Windows → Allow<br>
+                    4️⃣ <strong>Tắt ad blocker:</strong> Tắt uBlock Origin, AdBlock Plus tạm thời<br><br>
+                    <em>💡 Sau khi khắc phục, hãy thử đăng nhập lại!</em>
+                </div>
+            `, 'warning');
+        } else {
+            this.showAlert('✅ Popup hoạt động bình thường!', 'success');
+        }
+        return isBlocked;
+    }
+
+    // Đăng nhập Google bằng redirect (fallback)
+    async signInWithGoogleRedirect() {
+        try {
+            this.showAuthLoading(true);
+            const provider = new firebase.auth.GoogleAuthProvider();
+            provider.addScope('profile');
+            provider.addScope('email');
+            
+            this.showAlert('Đang chuyển hướng để đăng nhập Google...', 'info');
+            
+            // Sử dụng redirect ngay lập tức
+            await auth.signInWithRedirect(provider);
+            // Không cần xử lý gì thêm vì sẽ redirect
+        } catch (error) {
+            console.error('Google redirect login error:', error);
+            this.showAlert('Lỗi chuyển hướng: ' + error.message, 'error');
+            this.showAuthLoading(false);
+        }
+    }
+
     // Hiển thị cảnh báo về popup bị chặn
     showPopupBlockedWarning() {
         const warningMessage = `
             <div style="text-align: left; line-height: 1.5;">
-                <strong>Popup bị chặn!</strong><br><br>
-                Để đăng nhập Google dễ dàng hơn, bạn có thể:<br>
-                1. Cho phép popup cho trang web này<br>
-                2. Tắt ad blocker tạm thời<br>
-                3. Sử dụng chế độ redirect (sẽ chuyển hướng)<br><br>
-                <em>App sẽ tự động sử dụng chế độ redirect...</em>
+                <strong>🚫 Popup bị chặn!</strong><br><br>
+                <strong>Cách khắc phục:</strong><br>
+                1️⃣ <strong>Cho phép popup:</strong><br>
+                &nbsp;&nbsp;• Chrome/Edge: Click khóa → Site settings → Pop-ups → Allow<br>
+                &nbsp;&nbsp;• Firefox: Click khóa → Site Permissions → Pop-ups → Allow<br>
+                &nbsp;&nbsp;• Safari: Preferences → Websites → Pop-up Windows → Allow<br><br>
+                2️⃣ <strong>Tắt ad blocker:</strong><br>
+                &nbsp;&nbsp;• Tắt uBlock Origin, AdBlock Plus tạm thời<br>
+                &nbsp;&nbsp;• Thêm trang web vào whitelist<br><br>
+                <em>💡 App sẽ tự động chuyển sang chế độ redirect trong 2 giây...</em>
             </div>
         `;
         
@@ -373,34 +428,34 @@ class SleepTracker {
             provider.addScope('profile');
             provider.addScope('email');
             
-            // Kiểm tra xem popup có bị chặn không
-            if (this.isPopupBlocked()) {
-                this.showPopupBlockedWarning();
-                // Sử dụng redirect ngay lập tức
-                this.showAlert('Đang chuyển hướng để đăng nhập Google...', 'info');
-                await auth.signInWithRedirect(provider);
-                return;
-            }
-            
-            // Thử popup trước, nếu bị chặn thì dùng redirect
+            // Luôn thử popup trước, nếu bị chặn thì tự động chuyển sang redirect
             try {
+                console.log('Thử đăng nhập bằng popup...');
                 await auth.signInWithPopup(provider);
                 this.hideLoginModal();
                 this.showAlert('Đăng nhập thành công!', 'success');
             } catch (popupError) {
-                console.log('Popup failed, trying redirect:', popupError.code);
+                console.log('Popup failed, error code:', popupError.code);
                 
+                // Xử lý các lỗi popup cụ thể
                 if (popupError.code === 'auth/popup-blocked' || 
-                    popupError.code === 'auth/popup-closed-by-user') {
+                    popupError.code === 'auth/popup-closed-by-user' ||
+                    popupError.code === 'auth/cancelled-popup-request') {
                     
-                    // Thông báo cho user biết sẽ chuyển hướng
+                    console.log('Chuyển sang chế độ redirect...');
+                    
+                    // Hiển thị thông báo và hướng dẫn
+                    this.showPopupBlockedWarning();
+                    
+                    // Đợi một chút để user đọc thông báo
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    // Sử dụng redirect
                     this.showAlert('Đang chuyển hướng để đăng nhập Google...', 'info');
-                    
-                    // Sử dụng redirect thay vì popup
                     await auth.signInWithRedirect(provider);
-                    // Không cần hide modal vì sẽ redirect
+                    return; // Không cần xử lý gì thêm vì sẽ redirect
                 } else {
-                    // Các lỗi khác
+                    // Các lỗi khác - ném ra để xử lý ở catch bên ngoài
                     throw popupError;
                 }
             }
@@ -422,6 +477,12 @@ class SleepTracker {
                     break;
                 case 'auth/network-request-failed':
                     errorMessage = 'Lỗi kết nối mạng. Vui lòng kiểm tra kết nối và thử lại.';
+                    break;
+                case 'auth/operation-not-allowed':
+                    errorMessage = 'Đăng nhập Google chưa được bật. Vui lòng liên hệ admin.';
+                    break;
+                case 'auth/too-many-requests':
+                    errorMessage = 'Quá nhiều yêu cầu. Vui lòng thử lại sau vài phút.';
                     break;
                 default:
                     errorMessage = 'Lỗi đăng nhập: ' + error.message;
