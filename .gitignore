@@ -34,7 +34,7 @@ firebase-debug.log
 firestore-debug.log
 
 # Configuration files with sensitive data
-config.js
+# config.js  # Commented out for this small project
 config.local.js
 secrets.js
 *.key
