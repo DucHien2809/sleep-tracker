@@ -46,9 +46,14 @@
 - Trong modal đăng nhập, sử dụng nút "Đăng nhập Google (Chế độ chuyển hướng)"
 - Nút này sẽ chuyển hướng ngay lập tức mà không cần thử popup
 
-#### 6. Kiểm tra trạng thái popup
+#### 6. Kiểm tra trạng thái popup và Firebase
 - Sử dụng nút "Kiểm tra trạng thái Popup" để xem popup có bị chặn không
-- Nút này sẽ hiển thị hướng dẫn chi tiết nếu có vấn đề
+- Sử dụng nút "Kiểm tra trạng thái Firebase" để xem Firebase có hoạt động không
+- Các nút này sẽ hiển thị hướng dẫn chi tiết nếu có vấn đề
+
+#### 7. Nút thử lại tự động
+- Khi popup bị chặn, app sẽ hiển thị nút "Thử chế độ chuyển hướng"
+- Click vào nút này để chuyển sang chế độ redirect ngay lập tức
 
 ## 🛠️ Cài đặt Firebase
 
@@ -80,6 +85,9 @@
 - ✅ Hoạt động offline
 - ✅ Thông báo nhắc nhở
 - ✅ Tương thích Safari
+- ✅ Xử lý lỗi popup thông minh
+- ✅ Fallback tự động sang redirect mode
+- ✅ Kiểm tra trạng thái hệ thống
 
 ## 🌐 Triển khai
 
@@ -106,11 +114,32 @@
 Nếu gặp vấn đề:
 1. Kiểm tra console browser
 2. Sử dụng nút "Kiểm tra trạng thái Popup"
-3. Xem hướng dẫn khắc phục lỗi popup
-4. Sử dụng nút "Đăng nhập Google (Chế độ chuyển hướng)"
-5. Kiểm tra cài đặt Firebase
-6. Đảm bảo domain được authorize
+3. Sử dụng nút "Kiểm tra trạng thái Firebase"
+4. Xem hướng dẫn khắc phục lỗi popup
+5. Sử dụng nút "Đăng nhập Google (Chế độ chuyển hướng)"
+6. Kiểm tra cài đặt Firebase
+7. Đảm bảo domain được authorize
+
+## 🆕 Tính năng mới
+
+### Xử lý lỗi thông minh
+- Tự động phát hiện lỗi popup
+- Fallback tự động sang redirect mode
+- Hiển thị nút thử lại khi cần thiết
+- Thông báo lỗi chi tiết và hướng dẫn khắc phục
+
+### Kiểm tra hệ thống
+- Kiểm tra trạng thái popup
+- Kiểm tra trạng thái Firebase
+- Hiển thị thông tin debug chi tiết
+- Gợi ý khắc phục cụ thể
+
+### Cải thiện UX
+- Loading states rõ ràng
+- Thông báo lỗi thân thiện
+- Hướng dẫn từng bước
+- Fallback options đa dạng
 
 ---
 
-**Lưu ý:** App sẽ tự động xử lý lỗi popup bằng cách chuyển sang chế độ redirect, đảm bảo user luôn có thể đăng nhập được. Nếu vẫn gặp vấn đề, hãy sử dụng các nút fallback được cung cấp.
+**Lưu ý:** App sẽ tự động xử lý lỗi popup bằng cách chuyển sang chế độ redirect, đảm bảo user luôn có thể đăng nhập được. Nếu vẫn gặp vấn đề, hãy sử dụng các nút fallback được cung cấp hoặc kiểm tra trạng thái hệ thống.

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Firebase & Popup</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-btn:hover {
+            background: #5a6fd8;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Firebase & Popup</h1>
+    
+    <div class="test-section">
+        <h2>1. Kiểm tra Config</h2>
+        <button class="test-btn" onclick="testConfig()">Test Config</button>
+        <div id="config-status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Kiểm tra Firebase</h2>
+        <button class="test-btn" onclick="testFirebase()">Test Firebase</button>
+        <div id="firebase-status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Kiểm tra Popup</h2>
+        <button class="test-btn" onclick="testPopup()">Test Popup</button>
+        <div id="popup-status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Kiểm tra Auth</h2>
+        <button class="test-btn" onclick="testAuth()">Test Auth</button>
+        <div id="auth-status"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>5. Test đăng nhập Google</h2>
+        <button class="test-btn" onclick="testGoogleLogin()">Test Google Login</button>
+        <div id="login-status"></div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Load config -->
+    <script src="config.js"></script>
+    
+    <script>
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        function testConfig() {
+            try {
+                if (typeof CONFIG !== 'undefined') {
+                    showStatus('config-status', 
+                        `✅ Config loaded successfully!<br>
+                         Firebase API Key: ${CONFIG.FIREBASE_CONFIG.apiKey.substring(0, 10)}...<br>
+                         Project ID: ${CONFIG.FIREBASE_CONFIG.projectId}`, 'success');
+                } else {
+                    showStatus('config-status', '❌ CONFIG not loaded!', 'error');
+                }
+            } catch (error) {
+                showStatus('config-status', `❌ Config error: ${error.message}`, 'error');
+            }
+        }
+        
+        function testFirebase() {
+            try {
+                if (typeof CONFIG === 'undefined') {
+                    showStatus('firebase-status', '❌ Config not loaded!', 'error');
+                    return;
+                }
+                
+                const firebaseConfig = CONFIG.FIREBASE_CONFIG;
+                firebase.initializeApp(firebaseConfig);
+                
+                const auth = firebase.auth();
+                const db = firebase.firestore();
+                
+                window.auth = auth;
+                window.db = db;
+                
+                showStatus('firebase-status', 
+                    `✅ Firebase initialized successfully!<br>
+                     Auth: ${auth ? '✅' : '❌'}<br>
+                     Firestore: ${db ? '✅' : '❌'}`, 'success');
+                     
+            } catch (error) {
+                showStatus('firebase-status', `❌ Firebase error: ${error.message}`, 'error');
+            }
+        }
+        
+        function testPopup() {
+            try {
+                const testPopup = window.open('', '_blank', 'width=100,height=100');
+                if (testPopup) {
+                    testPopup.close();
+                    showStatus('popup-status', '✅ Popup works!', 'success');
+                } else {
+                    showStatus('popup-status', '❌ Popup blocked!', 'error');
+                }
+            } catch (error) {
+                showStatus('popup-status', `❌ Popup error: ${error.message}`, 'error');
+            }
+        }
+        
+        function testAuth() {
+            try {
+                if (!window.auth) {
+                    showStatus('auth-status', '❌ Firebase auth not initialized!', 'error');
+                    return;
+                }
+                
+                showStatus('auth-status', 
+                    `✅ Auth ready!<br>
+                     Current user: ${window.auth.currentUser ? window.auth.currentUser.email : 'None'}<br>
+                     Auth state: Active`, 'success');
+                     
+            } catch (error) {
+                showStatus('auth-status', `❌ Auth error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testGoogleLogin() {
+            try {
+                if (!window.auth) {
+                    showStatus('login-status', '❌ Firebase auth not initialized!', 'error');
+                    return;
+                }
+                
+                showStatus('login-status', '⏳ Testing Google login...', 'info');
+                
+                const provider = new firebase.auth.GoogleAuthProvider();
+                provider.addScope('profile');
+                provider.addScope('email');
+                
+                try {
+                    await window.auth.signInWithPopup(provider);
+                    showStatus('login-status', '✅ Google login successful!', 'success');
+                } catch (popupError) {
+                    if (popupError.code === 'auth/popup-blocked') {
+                        showStatus('login-status', 
+                            `⚠️ Popup blocked!<br>
+                             Error: ${popupError.code}<br>
+                             Message: ${popupError.message}`, 'warning');
+                    } else {
+                        showStatus('login-status', 
+                            `❌ Login failed!<br>
+                             Error: ${popupError.code}<br>
+                             Message: ${popupError.message}`, 'error');
+                    }
+                }
+                
+            } catch (error) {
+                showStatus('login-status', `❌ Test error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto test config on load
+        window.addEventListener('load', () => {
+            setTimeout(testConfig, 500);
+        });
+    </script>
+</body>
+</html>

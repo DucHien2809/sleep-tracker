@@ -99,7 +99,10 @@ class SleepTracker {
 
     init() {
         this.setupEventListeners();
-        this.setupAuthListeners();
+        
+        // Wait for Firebase to be ready before setting up auth
+        this.waitForFirebase();
+        
         this.updateCurrentDate();
         this.setTodayAsDefault();
         
@@ -120,6 +123,20 @@ class SleepTracker {
                 this.showAlert('Lưu ý: Safari Private Mode có thể không lưu được dữ liệu.', 'warning');
             }
         }
+    }
+    
+    // Wait for Firebase to be ready
+    waitForFirebase() {
+        const checkFirebase = () => {
+            if (window.auth && window.db) {
+                console.log('Firebase ready, setting up auth listeners');
+                this.setupAuthListeners();
+            } else {
+                console.log('Waiting for Firebase...');
+                setTimeout(checkFirebase, 100);
+            }
+        };
+        checkFirebase();
     }
     
     showAlert(message, type = 'info') {
@@ -231,19 +248,23 @@ class SleepTracker {
 
     setupAuthListeners() {
         // Firebase auth state listener
-        auth.onAuthStateChanged((user) => {
-            this.currentUser = user;
-            this.updateUIForUser();
-            
-            if (user) {
-                this.loadUserData();
-            } else {
-                this.loadGuestData();
-            }
-        });
+        if (window.auth) {
+            window.auth.onAuthStateChanged((user) => {
+                this.currentUser = user;
+                this.updateUIForUser();
+                
+                if (user) {
+                    this.loadUserData();
+                } else {
+                    this.loadGuestData();
+                }
+            });
 
-        // Xử lý redirect result từ Google đăng nhập
-        this.handleRedirectResult();
+            // Xử lý redirect result từ Google đăng nhập
+            this.handleRedirectResult();
+        } else {
+            console.error('Firebase auth not initialized yet');
+        }
 
         // Login modal controls
         this.loginBtn.addEventListener('click', () => {
@@ -284,6 +305,13 @@ class SleepTracker {
         document.getElementById('check-popup-status').addEventListener('click', () => {
             this.checkPopupStatus();
         });
+        
+        // Check Firebase status
+        if (document.getElementById('check-firebase-status')) {
+            document.getElementById('check-firebase-status').addEventListener('click', () => {
+                this.checkFirebaseStatus();
+            });
+        }
 
         // Email auth form
         document.getElementById('email-auth-form').addEventListener('submit', (e) => {
@@ -300,7 +328,11 @@ class SleepTracker {
     // Authentication Methods
     async handleRedirectResult() {
         try {
-            const result = await auth.getRedirectResult();
+            if (!window.auth) {
+                console.error('Firebase auth not initialized');
+                return;
+            }
+            const result = await window.auth.getRedirectResult();
             if (result.user) {
                 // User đã đăng nhập thành công qua redirect
                 this.showAlert('Đăng nhập Google thành công!', 'success');
@@ -350,10 +382,42 @@ class SleepTracker {
         }
         return isBlocked;
     }
+    
+    // Kiểm tra trạng thái Firebase
+    checkFirebaseStatus() {
+        if (window.auth && window.db) {
+            this.showAlert(`
+                <div style="text-align: left; line-height: 1.5;">
+                    <strong>✅ Firebase đã sẵn sàng!</strong><br><br>
+                    <strong>Trạng thái:</strong><br>
+                    🔐 Authentication: Hoạt động<br>
+                    💾 Firestore: Hoạt động<br>
+                    🌐 Kết nối: Ổn định<br><br>
+                    <em>Bạn có thể đăng nhập bình thường!</em>
+                </div>
+            `, 'success');
+        } else {
+            this.showAlert(`
+                <div style="text-align: left; line-height: 1.5;">
+                    <strong>❌ Firebase chưa sẵn sàng!</strong><br><br>
+                    <strong>Vấn đề:</strong><br>
+                    🔐 Authentication: Chưa khởi tạo<br>
+                    💾 Firestore: Chưa khởi tạo<br>
+                    🌐 Kết nối: Lỗi<br><br>
+                    <em>Vui lòng tải lại trang và thử lại!</em>
+                </div>
+            `, 'error');
+        }
+    }
 
     // Đăng nhập Google bằng redirect (fallback)
     async signInWithGoogleRedirect() {
         try {
+            if (!window.auth) {
+                this.showAlert('Firebase chưa được khởi tạo. Vui lòng thử lại.', 'error');
+                return;
+            }
+            
             this.showAuthLoading(true);
             const provider = new firebase.auth.GoogleAuthProvider();
             provider.addScope('profile');
@@ -362,7 +426,7 @@ class SleepTracker {
             this.showAlert('Đang chuyển hướng để đăng nhập Google...', 'info');
             
             // Sử dụng redirect ngay lập tức
-            await auth.signInWithRedirect(provider);
+            await window.auth.signInWithRedirect(provider);
             // Không cần xử lý gì thêm vì sẽ redirect
         } catch (error) {
             console.error('Google redirect login error:', error);
@@ -423,6 +487,11 @@ class SleepTracker {
 
     async signInWithGoogle() {
         try {
+            if (!window.auth) {
+                this.showAlert('Firebase chưa được khởi tạo. Vui lòng thử lại.', 'error');
+                return;
+            }
+            
             this.showAuthLoading(true);
             const provider = new firebase.auth.GoogleAuthProvider();
             provider.addScope('profile');
@@ -431,7 +500,7 @@ class SleepTracker {
             // Luôn thử popup trước, nếu bị chặn thì tự động chuyển sang redirect
             try {
                 console.log('Thử đăng nhập bằng popup...');
-                await auth.signInWithPopup(provider);
+                await window.auth.signInWithPopup(provider);
                 this.hideLoginModal();
                 this.showAlert('Đăng nhập thành công!', 'success');
             } catch (popupError) {
@@ -452,7 +521,7 @@ class SleepTracker {
                     
                     // Sử dụng redirect
                     this.showAlert('Đang chuyển hướng để đăng nhập Google...', 'info');
-                    await auth.signInWithRedirect(provider);
+                    await window.auth.signInWithRedirect(provider);
                     return; // Không cần xử lý gì thêm vì sẽ redirect
                 } else {
                     // Các lỗi khác - ném ra để xử lý ở catch bên ngoài
@@ -470,7 +539,7 @@ class SleepTracker {
                     errorMessage = 'Trình duyệt đã chặn popup. Vui lòng cho phép popup cho trang web này và thử lại.';
                     break;
                 case 'auth/popup-closed-by-user':
-                    errorMessage = 'Cửa sổ đăng nhập đã bị đóng. Vui lòng thử lại.';
+                    errorMessage = 'App sẽ tự động chuyển sang chế độ redirect.';
                     break;
                 case 'auth/cancelled-popup-request':
                     errorMessage = 'Yêu cầu đăng nhập đã bị hủy. Vui lòng thử lại.';
@@ -489,12 +558,60 @@ class SleepTracker {
             }
             
             this.showAlert(errorMessage, 'error');
+            
+            // Nếu là lỗi popup, hiển thị nút thử lại
+            if (error.code === 'auth/popup-blocked') {
+                this.showRetryButton();
+            }
         } finally {
             this.showAuthLoading(false);
         }
     }
+    
+    // Hiển thị nút thử lại khi popup bị chặn
+    showRetryButton() {
+        const retryDiv = document.createElement('div');
+        retryDiv.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            z-index: 10001;
+            text-align: center;
+            max-width: 400px;
+        `;
+        
+        retryDiv.innerHTML = `
+            <h3>🚫 Popup bị chặn</h3>
+            <p>Trình duyệt đã chặn popup đăng nhập. Bạn có thể:</p>
+            <div style="margin: 1rem 0;">
+                <button onclick="this.parentElement.parentElement.remove(); sleepTracker.signInWithGoogleRedirect();" 
+                        style="background: #ff9800; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; margin: 0.5rem; cursor: pointer;">
+                    🔄 Thử chế độ chuyển hướng
+                </button>
+                <button onclick="this.parentElement.parentElement.remove();" 
+                        style="background: #666; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; margin: 0.5rem; cursor: pointer;">
+                    ❌ Đóng
+                </button>
+            </div>
+            <p style="font-size: 0.9rem; color: #666;">
+                💡 Để sử dụng popup, hãy cho phép popup cho trang web này trong cài đặt trình duyệt.
+            </p>
+        `;
+        
+        document.body.appendChild(retryDiv);
+    }
 
     async handleEmailAuth() {
+        if (!window.auth) {
+            this.showAlert('Firebase chưa được khởi tạo. Vui lòng thử lại.', 'error');
+            return;
+        }
+        
         const email = document.getElementById('auth-email').value;
         const password = document.getElementById('auth-password').value;
         const isRegister = document.getElementById('register-tab').classList.contains('active');
@@ -515,7 +632,7 @@ class SleepTracker {
 
             try {
                 this.showAuthLoading(true);
-                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const userCredential = await window.auth.createUserWithEmailAndPassword(email, password);
                 
                 if (displayName) {
                     await userCredential.user.updateProfile({
@@ -534,7 +651,7 @@ class SleepTracker {
         } else {
             try {
                 this.showAuthLoading(true);
-                await auth.signInWithEmailAndPassword(email, password);
+                await window.auth.signInWithEmailAndPassword(email, password);
                 this.hideLoginModal();
                 this.showAlert('Đăng nhập thành công!', 'success');
             } catch (error) {
@@ -548,7 +665,11 @@ class SleepTracker {
 
     async signOut() {
         try {
-            await auth.signOut();
+            if (!window.auth) {
+                this.showAlert('Firebase chưa được khởi tạo. Vui lòng thử lại.', 'error');
+                return;
+            }
+            await window.auth.signOut();
             this.showAlert('Đã đăng xuất!', 'info');
         } catch (error) {
             console.error('Logout error:', error);
@@ -735,9 +856,9 @@ class SleepTracker {
     }
 
     async saveSleepRecordToFirestore(record) {
-        if (!this.currentUser) return;
+        if (!this.currentUser || !window.db) return;
 
-        const sleepRecordRef = db.collection('users').doc(this.currentUser.uid)
+        const sleepRecordRef = window.db.collection('users').doc(this.currentUser.uid)
             .collection('sleepData').doc(record.id);
 
         const recordData = { ...record };
@@ -973,17 +1094,17 @@ class SleepTracker {
 
     // Data Management Methods
     async loadUserData() {
-        if (!this.currentUser) return;
+        if (!this.currentUser || !window.db) return;
 
         try {
             // Load user settings
-            const settingsDoc = await db.collection('users').doc(this.currentUser.uid).get();
+            const settingsDoc = await window.db.collection('users').doc(this.currentUser.uid).get();
             if (settingsDoc.exists) {
                 this.settings = { ...this.settings, ...settingsDoc.data().settings };
             }
 
             // Load sleep data
-            const sleepQuery = await db.collection('users').doc(this.currentUser.uid)
+            const sleepQuery = await window.db.collection('users').doc(this.currentUser.uid)
                 .collection('sleepData')
                 .orderBy('date', 'desc')
                 .get();
@@ -1035,9 +1156,9 @@ class SleepTracker {
     }
 
     async saveToFirestore() {
-        if (!this.currentUser) return;
+        if (!this.currentUser || !window.db) return;
 
-        const userDoc = db.collection('users').doc(this.currentUser.uid);
+        const userDoc = window.db.collection('users').doc(this.currentUser.uid);
         
         // Save settings
         await userDoc.set({
